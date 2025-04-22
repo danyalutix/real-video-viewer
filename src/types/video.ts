@@ -9,6 +9,9 @@ export interface Video {
   embedUrl: string;
   categories: string[];
   source: 'Pornhub' | 'XVideos';
+  // Adding these optional properties to fix the type errors
+  rating?: string;
+  uploadDate?: string;
 }
 
 export interface VideosResponse {
@@ -23,6 +26,6 @@ export interface VideoDetailResponse {
 }
 
 export interface VideoDetail extends Video {
-  rating?: string;
-  uploadDate?: string;
+  // These properties are now inherited from Video interface
+  // No need to redefine them here since they're in the base interface
 }
