@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { VideosResponse, Video } from '@/types/video';
+import { VideosResponse, Video, VideoDetailResponse } from '@/types/video';
 
 const CSV_URL = 'https://raw.githubusercontent.com/danyalutix/real-video-viewer/main/part_1.csv';
 
@@ -110,10 +110,30 @@ export const fetchVideos = async (): Promise<VideosResponse> => {
   }
 };
 
-// Only needed for VideoDetail; not used for grid, safely return null
-export const fetchVideoById = async (source: string, id: string): Promise<any> => {
-  // You can keep this as before, or adapt if needed
-  // For the new CSV data, you may want to filter from the fetched videos instead, but
-  // that's not needed for grid display & navigation with real CSV yet.
-  return { success: false, video: null };
+export const fetchVideoById = async (source: string, id: string): Promise<VideoDetailResponse> => {
+  try {
+    // First fetch all videos
+    const allVideosResponse = await fetchVideos();
+    
+    if (!allVideosResponse.success) {
+      return { success: false, video: null };
+    }
+    
+    // Find the video that matches the source and id
+    const video = allVideosResponse.videos.find(
+      (v) => v.source.toLowerCase() === source.toLowerCase() && v.id === id
+    );
+    
+    if (!video) {
+      return { success: false, video: null };
+    }
+    
+    return {
+      success: true,
+      video
+    };
+  } catch (error) {
+    console.error('Error fetching video by ID:', error);
+    return { success: false, video: null };
+  }
 };

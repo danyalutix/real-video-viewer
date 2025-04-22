@@ -72,15 +72,20 @@ const VideoDetail = () => {
           ) : video ? (
             <>
               <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
-                {/* Embed the video player */}
-                <iframe
-                  src={video.embedUrl}
-                  title={video.title}
-                  frameBorder="0"
-                  allowFullScreen
-                  className="absolute inset-0 w-full h-full"
-                  sandbox="allow-same-origin allow-scripts allow-forms"
-                ></iframe>
+                {video.embedUrl.startsWith('<iframe') ? (
+                  // For legacy data that contains the full iframe HTML
+                  <div dangerouslySetInnerHTML={{ __html: video.embedUrl }} />
+                ) : (
+                  // For direct embed URLs
+                  <iframe
+                    src={video.embedUrl}
+                    title={video.title}
+                    frameBorder="0"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full"
+                    sandbox="allow-same-origin allow-scripts allow-forms"
+                  ></iframe>
+                )}
               </div>
 
               <div className="mt-6">

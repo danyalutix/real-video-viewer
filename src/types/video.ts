@@ -12,6 +12,14 @@ export interface Video {
   // Adding these optional properties to fix the type errors
   rating?: string;
   uploadDate?: string;
+  // Additional optional fields for details
+  performer?: string;
+  likes?: string;
+  dislikes?: string;
+  tags?: string[];
+  previewImages?: string[];
+  backupThumbnail?: string;
+  backupPreviews?: string[];
 }
 
 export interface VideosResponse {
@@ -22,10 +30,5 @@ export interface VideosResponse {
 
 export interface VideoDetailResponse {
   success: boolean;
-  video: VideoDetail;
-}
-
-export interface VideoDetail extends Video {
-  // These properties are now inherited from Video interface
-  // No need to redefine them here since they're in the base interface
+  video: Video | null;
 }
