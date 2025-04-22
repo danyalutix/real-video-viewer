@@ -1,11 +1,16 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { fetchVideos } from '@/api/videosApi';
 import VideoCard from '@/components/VideoCard';
 import VideoCardSkeleton from '@/components/VideoCardSkeleton';
 import { Video } from '@/types/video';
+import CategoriesBar from '@/components/CategoriesBar';
+
+const POPULAR_CATEGORIES = [
+  "Blonde", "MILF", "Lesbian", "Teen", "Massage", "Big Tits", "Anal", "Amateur", "Asian", "BBW", "Ebony", "POV", "Public", "Threesome", "Redhead"
+];
 
 const Index = () => {
   const { 
@@ -21,6 +26,9 @@ const Index = () => {
     refetchOnWindowFocus: false,
   });
 
+  // Category filtering state
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
   useEffect(() => {
     if (isError && error instanceof Error) {
       toast.error('Failed to load videos', {
@@ -32,6 +40,22 @@ const Index = () => {
       });
     }
   }, [isError, error, refetch]);
+
+  // Gather all categories from loaded videos
+  const discoveredCategories = useMemo(() => {
+    if (!data?.videos) return [];
+    const all = data.videos.flatMap(v => v.categories || []);
+    return Array.from(new Set([...POPULAR_CATEGORIES, ...all]));
+  }, [data]);
+
+  // Filter videos by selected category if any
+  const filteredVideos = useMemo(() => {
+    if (!data?.videos) return [];
+    if (!selectedCategory) return data.videos;
+    return data.videos.filter(video =>
+      video.categories?.includes(selectedCategory)
+    );
+  }, [data, selectedCategory]);
 
   // Define skeleton loading UI
   const renderSkeletons = () => {
@@ -48,7 +72,7 @@ const Index = () => {
           <div className="flex items-center space-x-4">
             {!isLoading && data && (
               <span className="text-sm text-muted-foreground">
-                {data.count} videos found
+                {filteredVideos.length} videos found
               </span>
             )}
           </div>
@@ -57,13 +81,25 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-8">
         <section>
+          {/* 728x90 banner above grid */}
+          <div className="w-full flex justify-center mb-8">
+            <div className="bg-gray-800 text-white text-center flex items-center justify-center" style={{ width: 728, height: 90, borderRadius: 8 }}>
+              Ad Placeholder (728x90)
+            </div>
+          </div>
+          {/* Categories Scrollbar */}
+          <CategoriesBar
+            categories={discoveredCategories}
+            selected={selectedCategory}
+            onSelect={setSelectedCategory}
+          />
           <h2 className="text-xl font-semibold mb-6">Trending Videos</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {isLoading ? (
               renderSkeletons()
-            ) : data?.videos && data.videos.length > 0 ? (
-              data.videos.map((video: Video) => (
+            ) : filteredVideos.length > 0 ? (
+              filteredVideos.map((video: Video) => (
                 <VideoCard key={`${video.source}-${video.id}`} video={video} />
               ))
             ) : (

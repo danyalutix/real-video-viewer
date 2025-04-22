@@ -65,8 +65,8 @@ const VideoDetail = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto">
+      <main className="container mx-auto px-4 py-8 flex flex-col-reverse lg:flex-row gap-8">
+        <div className="flex-1 max-w-5xl mx-auto w-full">
           {isLoading ? (
             renderSkeleton()
           ) : video ? (
@@ -138,6 +138,15 @@ const VideoDetail = () => {
             </div>
           )}
         </div>
+        {/* Right sidebar (shows on lg+) */}
+        <aside className="w-full lg:w-[300px] flex-shrink-0 flex justify-center">
+          <div
+            className="bg-gray-800 text-white text-center flex items-center justify-center"
+            style={{ width: 300, height: 250, borderRadius: 8 }}
+          >
+            Ad Placeholder (300x250)
+          </div>
+        </aside>
       </main>
 
       <footer className="border-t border-border py-6 mt-auto">
