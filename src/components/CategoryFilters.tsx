@@ -76,9 +76,9 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({
             <SelectValue placeholder="Filter Category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
+            <SelectItem value="all_categories">All Categories</SelectItem>
             {categories.map(cat => (
-              <SelectItem key={cat} value={cat}>
+              <SelectItem key={cat} value={cat || `category_${cat}`}>
                 {cat}
               </SelectItem>
             ))}
@@ -92,7 +92,7 @@ const CategoryFilters: React.FC<CategoryFiltersProps> = ({
           </SelectTrigger>
           <SelectContent>
             {DURATION_OPTIONS.map(opt => (
-              <SelectItem key={opt.value} value={opt.value}>
+              <SelectItem key={opt.value} value={opt.value || "any_duration"}>
                 {opt.label}
               </SelectItem>
             ))}

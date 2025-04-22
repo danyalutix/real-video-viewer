@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -34,21 +33,15 @@ const Index = () => {
     refetchOnWindowFocus: false,
   });
 
-  // FILTER/SEARCH state
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('views');
-  const [duration, setDuration] = useState('');
-  const [filterCategory, setFilterCategory] = useState('');
-  // Category Accordion selection
+  const [duration, setDuration] = useState('any_duration');
+  const [filterCategory, setFilterCategory] = useState('all_categories');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-  // PAGINATION state
   const [page, setPage] = useState(1);
 
-  // When filters/search change, reset to the first page
   useEffect(() => { setPage(1); }, [search, sort, duration, filterCategory, selectedCategory]);
 
-  // Toasts for loading error
   useEffect(() => {
     if (isError && error instanceof Error) {
       toast.error('Failed to load videos', {
@@ -61,26 +54,21 @@ const Index = () => {
     }
   }, [isError, error, refetch]);
 
-  // COLLATE categories
   const allCategories = useMemo(() => {
     if (!data?.videos) return [];
     const cats = data.videos.flatMap(v => v.categories || []);
     return Array.from(new Set([...POPULAR_CATEGORIES, ...cats]));
   }, [data]);
 
-  // Build main-subcategory map based on videos
   const subCategoryMap = useMemo(() => {
-    // For this demo, treat every category that is not a MAIN as subcategory under its matching main (if possible)
     const result: Record<string, string[]> = {};
     MAIN_CATEGORIES.forEach(main => { result[main] = []; });
     if (data?.videos) {
       data.videos.forEach(v => {
         v.categories.forEach(cat => {
           if (MAIN_CATEGORIES.includes(cat)) {
-            // Add only unique
             if (!result[cat].includes(cat)) result[cat].push();
           } else {
-            // assign to a main if MacGyver; fallback to "Other"
             const bucket = v.categories.find(main => MAIN_CATEGORIES.includes(main));
             if (bucket) {
               if (!result[bucket].includes(cat)) result[bucket].push(cat);
@@ -90,16 +78,13 @@ const Index = () => {
       });
     }
     MAIN_CATEGORIES.forEach(main => {
-      // Remove empty/undefined
       result[main] = Array.from(new Set(result[main].filter(Boolean)));
     });
     return result;
   }, [data]);
 
-  // Video LIST filtering logic
   const filteredVideos = useMemo(() => {
     if (!data?.videos) return [];
-    // Search
     let videos = data.videos as Video[];
     if (search.trim()) {
       const qs = search.trim().toLowerCase();
@@ -109,20 +94,17 @@ const Index = () => {
           v.categories.some(c => c.toLowerCase().includes(qs))
       );
     }
-    // Filter category via dropdown (supersedes selectedCategory)
-    if (filterCategory) {
+    if (filterCategory && filterCategory !== 'all_categories') {
       videos = videos.filter(v => v.categories.includes(filterCategory));
     } else if (selectedCategory) {
       videos = videos.filter(v =>
         v.categories.includes(selectedCategory)
       );
     }
-    // Filter by duration
     if (duration === "short") videos = videos.filter(v => Number(v.duration) < 300);
     else if (duration === "medium") videos = videos.filter(v => Number(v.duration) >= 300 && Number(v.duration) <= 900);
     else if (duration === "long") videos = videos.filter(v => Number(v.duration) > 900);
 
-    // Sort
     if (sort === "views") videos.sort((a, b) => Number(b.views) - Number(a.views));
     else if (sort === "date") videos.sort((a, b) => (b.uploadDate || "").localeCompare(a.uploadDate || ""));
     else if (sort === "rating") videos.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
@@ -130,14 +112,12 @@ const Index = () => {
     return videos;
   }, [data, search, selectedCategory, filterCategory, duration, sort]);
 
-  // Pagination logic
   const pagedVideos = useMemo(() => {
     const start = 0;
     const end = page * PAGE_SIZE;
     return filteredVideos.slice(start, end);
   }, [filteredVideos, page]);
 
-  // Display skeletons
   const renderSkeletons = () => Array(PAGE_SIZE).fill(0).map((_, i) => (
     <VideoCardSkeleton key={`skeleton-${i}`} />
   ));
@@ -159,7 +139,6 @@ const Index = () => {
         </div>
       </header>
       <main className="container mx-auto px-4 py-8">
-        {/* Filters */}
         <CategoryFilters
           search={search}
           setSearch={setSearch}
@@ -171,7 +150,6 @@ const Index = () => {
           category={filterCategory}
           setCategory={setFilterCategory}
         />
-        {/* Collapsible Categories */}
         <CategoryAccordion
           mainCategories={MAIN_CATEGORIES}
           subCategoryMap={subCategoryMap}
@@ -183,7 +161,6 @@ const Index = () => {
         />
         <hr className="my-6 border-border" />
         <section>
-          {/* Section header */}
           <div className="mb-4 flex items-center gap-2">
             <span className="text-xl sm:text-2xl font-semibold tracking-tight font-roboto">
               Trending Adult Videos
@@ -199,7 +176,6 @@ const Index = () => {
               Ad Placeholder (728x90)
             </div>
           </div>
-          {/* Video grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {isLoading ? (
               renderSkeletons()
@@ -222,7 +198,6 @@ const Index = () => {
               </div>
             )}
           </div>
-          {/* Pagination / Load More */}
           {!isLoading && filteredVideos.length > pagedVideos.length && (
             <div className="flex justify-center py-8">
               <button
