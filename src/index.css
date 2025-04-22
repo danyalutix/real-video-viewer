@@ -1,6 +1,5 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -63,4 +62,12 @@
 /* Additional font-roboto utility for tailwind (custom) */
 .font-roboto {
   font-family: 'Roboto', system-ui, sans-serif;
+}
+
+/* Tooltip ellipsis for CategoryCard */
+button[title] .overflow-hidden.text-ellipsis {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100px;
 }
