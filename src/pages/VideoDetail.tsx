@@ -3,10 +3,11 @@ import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft, Play } from 'lucide-react';
+import { ArrowLeft, Play, Clock } from 'lucide-react';
 import { fetchVideoById } from '@/api/videosApi';
 import { cn } from '@/lib/utils';
-import { formatViewCount } from '@/lib/videoUtils';
+import { formatViewCount, formatDuration } from '@/lib/videoUtils';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 const VideoDetail = () => {
   const { source, id } = useParams<{ source: string; id: string }>();
@@ -71,21 +72,23 @@ const VideoDetail = () => {
             renderSkeleton()
           ) : video ? (
             <>
-              <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
-                {video.embedUrl.startsWith('<iframe') ? (
-                  // For legacy data that contains the full iframe HTML
-                  <div dangerouslySetInnerHTML={{ __html: video.embedUrl }} />
-                ) : (
-                  // For direct embed URLs
-                  <iframe
-                    src={video.embedUrl}
-                    title={video.title}
-                    frameBorder="0"
-                    allowFullScreen
-                    className="absolute inset-0 w-full h-full"
-                    sandbox="allow-same-origin allow-scripts allow-forms"
-                  ></iframe>
-                )}
+              <div className="w-full rounded-lg overflow-hidden relative bg-black">
+                <AspectRatio ratio={16/9} className="w-full">
+                  {video.embedUrl.startsWith('<iframe') ? (
+                    // For legacy data that contains the full iframe HTML
+                    <div dangerouslySetInnerHTML={{ __html: video.embedUrl }} className="w-full h-full" />
+                  ) : (
+                    // For direct embed URLs
+                    <iframe
+                      src={video.embedUrl}
+                      title={video.title}
+                      frameBorder="0"
+                      allowFullScreen
+                      className="w-full h-full absolute inset-0"
+                      sandbox="allow-same-origin allow-scripts allow-forms"
+                    ></iframe>
+                  )}
+                </AspectRatio>
               </div>
 
               <div className="mt-6">
@@ -96,8 +99,9 @@ const VideoDetail = () => {
                     <Play size={16} className="mr-1" />
                     <span>{formatViewCount(video.views)}</span>
                   </div>
-                  <div>
-                    <span>Duration: {video.duration}</span>
+                  <div className="flex items-center">
+                    <Clock size={16} className="mr-1" />
+                    <span>Duration: {formatDuration(video.duration)}</span>
                   </div>
                   <div className={cn(
                     "text-xs py-1 px-2 rounded font-medium",

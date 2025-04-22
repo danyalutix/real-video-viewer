@@ -21,13 +21,15 @@ export const formatViewCount = (views: string | number): string => {
  * Format video duration to a readable format
  * Example: 135 -> 2:15, 3661 -> 1:01:01
  */
-export const formatDuration = (duration: string): string => {
+export const formatDuration = (duration: string | number): string => {
   // If already formatted (e.g. "12:34"), return as is
-  if (duration.includes(':')) return duration;
+  if (typeof duration === 'string' && duration.includes(':')) return duration;
   
-  // If duration is not a number, return as is
-  const seconds = parseInt(duration, 10);
-  if (isNaN(seconds)) return duration;
+  // Convert to number if it's a string
+  const seconds = typeof duration === 'string' ? parseInt(duration, 10) : duration;
+  
+  // If duration is not a valid number, return as is
+  if (isNaN(seconds)) return typeof duration === 'string' ? duration : '0:00';
   
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
