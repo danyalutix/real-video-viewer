@@ -6,7 +6,7 @@ import { fetchVideos } from '@/api/videosApi';
 import VideoCard from '@/components/VideoCard';
 import VideoCardSkeleton from '@/components/VideoCardSkeleton';
 import { Video } from '@/types/video';
-import CategoriesBar from '@/components/CategoriesBar';
+import CategoriesGrid from '@/components/CategoriesGrid'; // changed import
 
 const POPULAR_CATEGORIES = [
   "Blonde", "MILF", "Lesbian", "Teen", "Massage", "Big Tits", "Anal", "Amateur", "Asian", "BBW", "Ebony", "POV", "Public", "Threesome", "Redhead"
@@ -65,10 +65,12 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background font-roboto">
       <header className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-primary">VideoHub</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-primary tracking-tight font-roboto">
+            VideoHub
+          </h1>
           <div className="flex items-center space-x-4">
             {!isLoading && data && (
               <span className="text-sm text-muted-foreground">
@@ -80,21 +82,33 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Categories section */}
+        <CategoriesGrid
+          categories={discoveredCategories}
+          selected={selectedCategory}
+          onSelect={setSelectedCategory}
+        />
+
+        <hr className="my-6 border-border" />
+
         <section>
+          {/* Section header */}
+          <div className="mb-4 flex items-center gap-2">
+            <span className="text-xl sm:text-2xl font-semibold tracking-tight font-roboto">
+              Trending Adult Videos
+            </span>
+            {selectedCategory && (
+              <span className="ml-2 text-base text-primary font-bold">{selectedCategory}</span>
+            )}
+          </div>
           {/* 728x90 banner above grid */}
           <div className="w-full flex justify-center mb-8">
             <div className="bg-gray-800 text-white text-center flex items-center justify-center" style={{ width: 728, height: 90, borderRadius: 8 }}>
               Ad Placeholder (728x90)
             </div>
           </div>
-          {/* Categories Scrollbar */}
-          <CategoriesBar
-            categories={discoveredCategories}
-            selected={selectedCategory}
-            onSelect={setSelectedCategory}
-          />
-          <h2 className="text-xl font-semibold mb-6">Trending Videos</h2>
 
+          {/* Video grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {isLoading ? (
               renderSkeletons()
@@ -118,6 +132,9 @@ const Index = () => {
             )}
           </div>
         </section>
+        
+        {/* Divider for pagination (future use) */}
+        <hr className="my-8 border-border" />
       </main>
 
       <footer className="border-t border-border py-6 mt-auto">

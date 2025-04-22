@@ -1,3 +1,6 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,6 +46,9 @@
     --sidebar-border: 217.2 32.6% 17.5%;
     --sidebar-ring: 265 89% 78%;
   }
+  html {
+    font-family: 'Roboto', system-ui, sans-serif;
+  }
 }
 
 @layer base {
@@ -53,4 +59,8 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+/* Additional font-roboto utility for tailwind (custom) */
+.font-roboto {
+  font-family: 'Roboto', system-ui, sans-serif;
 }
