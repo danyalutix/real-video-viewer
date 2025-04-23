@@ -1,16 +1,17 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft, Play, Clock } from 'lucide-react';
+import { ArrowLeft, Play, Clock, Maximize } from 'lucide-react';
 import { fetchVideoById } from '@/api/videosApi';
 import { cn } from '@/lib/utils';
-import { formatViewCount, formatDuration } from '@/lib/videoUtils';
+import { formatViewCount, formatDuration, toggleFullscreen } from '@/lib/videoUtils';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 const VideoDetail = () => {
   const { source, id } = useParams<{ source: string; id: string }>();
+  const videoContainerRef = useRef<HTMLDivElement>(null);
   
   const { 
     data, 
@@ -52,6 +53,10 @@ const VideoDetail = () => {
     </>
   );
 
+  const handleFullscreen = () => {
+    toggleFullscreen(videoContainerRef.current);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-10">
@@ -72,8 +77,8 @@ const VideoDetail = () => {
             renderSkeleton()
           ) : video ? (
             <>
-              <div className="w-full rounded-lg overflow-hidden relative bg-black">
-                <AspectRatio ratio={16/9} className="w-full">
+              <div className="w-full rounded-lg overflow-hidden relative bg-black" ref={videoContainerRef}>
+                <AspectRatio ratio={16/9} className="w-full relative">
                   {video.embedUrl.startsWith('<iframe') ? (
                     // For legacy data that contains the full iframe HTML
                     <div dangerouslySetInnerHTML={{ __html: video.embedUrl }} className="w-full h-full" />
@@ -86,8 +91,16 @@ const VideoDetail = () => {
                       allowFullScreen
                       className="w-full h-full absolute inset-0"
                       sandbox="allow-same-origin allow-scripts allow-forms"
+                      style={{ objectFit: 'cover' }}
                     ></iframe>
                   )}
+                  <button 
+                    onClick={handleFullscreen}
+                    className="absolute bottom-4 right-4 bg-black/70 text-white p-2 rounded-full hover:bg-black/90 transition-colors z-10"
+                    aria-label="Toggle fullscreen"
+                  >
+                    <Maximize size={20} />
+                  </button>
                 </AspectRatio>
               </div>
 

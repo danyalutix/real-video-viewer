@@ -43,6 +43,29 @@ export const formatDuration = (duration: string | number): string => {
 };
 
 /**
+ * Toggle fullscreen for a given element
+ */
+export const toggleFullscreen = (element: HTMLElement | null): void => {
+  if (!element) return;
+
+  if (!document.fullscreenElement) {
+    // Enter fullscreen
+    if (element.requestFullscreen) {
+      element.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    }
+  } else {
+    // Exit fullscreen
+    if (document.exitFullscreen) {
+      document.exitFullscreen().catch(err => {
+        console.error(`Error attempting to exit fullscreen: ${err.message}`);
+      });
+    }
+  }
+};
+
+/**
  * Pad a number with leading zero if less than 10
  */
 const padZero = (num: number): string => {

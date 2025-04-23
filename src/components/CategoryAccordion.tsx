@@ -26,11 +26,11 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 interface CategoryAccordionProps {
   mainCategories: string[];
   subCategoryMap: Record<string, string[]>;
-  expandedCount?: number; // default 7
+  expandedCount?: number; // default 5
   selected: string | null;
   onSelect: (cat: string | null) => void;
 }
-const DEFAULT_EXPANDED = 7;
+const DEFAULT_EXPANDED = 5;
 
 const CategoryAccordion: React.FC<CategoryAccordionProps> = ({
   mainCategories, // All possible main categories

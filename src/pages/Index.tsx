@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -9,8 +10,9 @@ import CategoryAccordion from '@/components/CategoryAccordion';
 import CategoryFilters from '@/components/CategoryFilters';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
+// Define main categories to display in the UI
 const MAIN_CATEGORIES = [
-  "Asian", "Teen", "MILF", "Amateur", "Lesbian", "Public", "Redhead"
+  "Asian", "Teen", "MILF", "Amateur", "Lesbian"
 ];
 
 const POPULAR_CATEGORIES = [
@@ -39,9 +41,14 @@ const Index = () => {
   const [filterCategory, setFilterCategory] = useState('all_categories');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [isFiltering, setIsFiltering] = useState(false);
 
-  useEffect(() => { setPage(1); }, [search, sort, duration, filterCategory, selectedCategory]);
+  // Reset page when filters change
+  useEffect(() => { 
+    setPage(1); 
+  }, [search, sort, duration, filterCategory, selectedCategory]);
 
+  // Show error toast if needed
   useEffect(() => {
     if (isError && error instanceof Error) {
       toast.error('Failed to load videos', {
@@ -54,12 +61,14 @@ const Index = () => {
     }
   }, [isError, error, refetch]);
 
+  // Extract all categories from the data
   const allCategories = useMemo(() => {
     if (!data?.videos) return [];
     const cats = data.videos.flatMap(v => v.categories || []);
     return Array.from(new Set([...POPULAR_CATEGORIES, ...cats]));
   }, [data]);
 
+  // Create subcategory mapping
   const subCategoryMap = useMemo(() => {
     const result: Record<string, string[]> = {};
     MAIN_CATEGORIES.forEach(main => { result[main] = []; });
@@ -83,9 +92,13 @@ const Index = () => {
     return result;
   }, [data]);
 
+  // Apply filters to videos
   const filteredVideos = useMemo(() => {
+    setIsFiltering(true);
     if (!data?.videos) return [];
+    
     let videos = data.videos as Video[];
+    
     if (search.trim()) {
       const qs = search.trim().toLowerCase();
       videos = videos.filter(
@@ -94,6 +107,7 @@ const Index = () => {
           v.categories.some(c => c.toLowerCase().includes(qs))
       );
     }
+    
     if (filterCategory && filterCategory !== 'all_categories') {
       videos = videos.filter(v => v.categories.includes(filterCategory));
     } else if (selectedCategory) {
@@ -101,6 +115,7 @@ const Index = () => {
         v.categories.includes(selectedCategory)
       );
     }
+    
     if (duration === "short") videos = videos.filter(v => Number(v.duration) < 300);
     else if (duration === "medium") videos = videos.filter(v => Number(v.duration) >= 300 && Number(v.duration) <= 900);
     else if (duration === "long") videos = videos.filter(v => Number(v.duration) > 900);
@@ -109,14 +124,44 @@ const Index = () => {
     else if (sort === "date") videos.sort((a, b) => (b.uploadDate || "").localeCompare(a.uploadDate || ""));
     else if (sort === "rating") videos.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
 
+    setIsFiltering(false);
     return videos;
   }, [data, search, selectedCategory, filterCategory, duration, sort]);
 
+  // Get the videos for the current page
   const pagedVideos = useMemo(() => {
-    const start = 0;
+    const start = (page - 1) * PAGE_SIZE;
     const end = page * PAGE_SIZE;
     return filteredVideos.slice(start, end);
   }, [filteredVideos, page]);
+
+  // Handle search and filter changes
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setPage(1); // Reset to first page on new search
+  };
+
+  const handleSortChange = (value: string) => {
+    setSort(value);
+    setPage(1);
+  };
+
+  const handleDurationChange = (value: string) => {
+    setDuration(value);
+    setPage(1);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setFilterCategory(value);
+    setSelectedCategory(null); // Reset accordion selection
+    setPage(1);
+  };
+
+  const handleCategorySelect = (cat: string | null) => {
+    setSelectedCategory(cat);
+    setFilterCategory('all_categories'); // Reset dropdown if user clicks on accordion
+    setPage(1);
+  };
 
   const renderSkeletons = () => Array(PAGE_SIZE).fill(0).map((_, i) => (
     <VideoCardSkeleton key={`skeleton-${i}`} />
@@ -141,23 +186,21 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8">
         <CategoryFilters
           search={search}
-          setSearch={setSearch}
+          setSearch={handleSearch}
           sort={sort}
-          setSort={setSort}
+          setSort={handleSortChange}
           duration={duration}
-          setDuration={setDuration}
+          setDuration={handleDurationChange}
           categories={allCategories}
           category={filterCategory}
-          setCategory={setFilterCategory}
+          setCategory={handleCategoryChange}
         />
         <CategoryAccordion
           mainCategories={MAIN_CATEGORIES}
           subCategoryMap={subCategoryMap}
+          expandedCount={5}
           selected={selectedCategory}
-          onSelect={val => {
-            setSelectedCategory(val);
-            setFilterCategory(''); // Reset dropdown if user clicks on accordion
-          }}
+          onSelect={handleCategorySelect}
         />
         <hr className="my-6 border-border" />
         <section>
@@ -165,9 +208,9 @@ const Index = () => {
             <span className="text-xl sm:text-2xl font-semibold tracking-tight font-roboto">
               Trending Adult Videos
             </span>
-            {(selectedCategory || filterCategory) && (
+            {(selectedCategory || filterCategory !== 'all_categories') && (
               <span className="ml-2 text-base text-primary font-bold">
-                {filterCategory || selectedCategory}
+                {filterCategory !== 'all_categories' ? filterCategory : selectedCategory}
               </span>
             )}
           </div>
@@ -176,6 +219,16 @@ const Index = () => {
               Ad Placeholder (728x90)
             </div>
           </div>
+          
+          {/* Loading indicator when filtering */}
+          {isFiltering && (
+            <div className="flex justify-center my-4">
+              <div className="animate-pulse bg-primary/20 text-primary px-4 py-2 rounded">
+                Filtering videos...
+              </div>
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {isLoading ? (
               renderSkeletons()
@@ -187,25 +240,48 @@ const Index = () => {
               <div className="col-span-full text-center py-20">
                 <h3 className="text-lg font-medium mb-2">No videos found</h3>
                 <p className="text-muted-foreground mb-4">
-                  Unable to load videos at this time.
+                  Try adjusting your filters or search terms.
                 </p>
                 <button
-                  onClick={() => refetch()}
+                  onClick={() => {
+                    setSearch('');
+                    setFilterCategory('all_categories');
+                    setSelectedCategory(null);
+                    setDuration('any_duration');
+                    setSort('views');
+                  }}
                   className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
                 >
-                  Try Again
+                  Reset Filters
                 </button>
               </div>
             )}
           </div>
-          {!isLoading && filteredVideos.length > pagedVideos.length && (
-            <div className="flex justify-center py-8">
-              <button
-                onClick={() => setPage(page + 1)}
-                className="px-8 py-2 rounded bg-primary text-primary-foreground font-medium text-lg hover:bg-primary/90 transition"
-              >
-                Load More
-              </button>
+          
+          {/* Pagination */}
+          {!isLoading && filteredVideos.length > PAGE_SIZE && (
+            <div className="mt-8">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                      className={page <= 1 ? "opacity-50 pointer-events-none" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <span className="px-4 py-2">
+                      Page {page} of {Math.ceil(filteredVideos.length / PAGE_SIZE)}
+                    </span>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => setPage(p => p + 1)}
+                      className={page >= Math.ceil(filteredVideos.length / PAGE_SIZE) ? "opacity-50 pointer-events-none" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
         </section>
