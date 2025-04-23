@@ -66,6 +66,27 @@ export const toggleFullscreen = (element: HTMLElement | null): void => {
 };
 
 /**
+ * Apply correct video styling to ensure it fills the container
+ */
+export const applyVideoStyling = (videoElement: HTMLVideoElement | null): void => {
+  if (!videoElement) return;
+  
+  // Apply correct styling to video element
+  videoElement.style.width = '100%';
+  videoElement.style.height = '100%';
+  videoElement.style.objectFit = 'cover'; // or 'contain' for no cropping
+  
+  // Ensure the parent container has proper styling
+  if (videoElement.parentElement) {
+    videoElement.parentElement.style.display = 'flex';
+    videoElement.parentElement.style.justifyContent = 'center';
+    videoElement.parentElement.style.alignItems = 'center';
+    videoElement.parentElement.style.width = '100%';
+    videoElement.parentElement.style.height = '100%';
+  }
+};
+
+/**
  * Pad a number with leading zero if less than 10
  */
 const padZero = (num: number): string => {

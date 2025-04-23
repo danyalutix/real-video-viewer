@@ -4,7 +4,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import CategoryCard from "./CategoryCard";
 import { cn } from "@/lib/utils";
 
-// Dummy icon map (reuse as needed or pass down)
+// Emoji/icon map for visual clarity
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   "Blonde": <span role="img" aria-label="blonde">🔞</span>,
   "MILF": <span role="img" aria-label="milf">🔞</span>,
@@ -47,7 +47,7 @@ const CategoryAccordion: React.FC<CategoryAccordionProps> = ({
       <div className="mb-2 font-semibold text-lg tracking-tight text-card-foreground">
         <span className="font-bold">Categories</span>
       </div>
-      <div className={cn("w-full flex flex-wrap gap-2")}>
+      <div className="w-full grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-2">
         {/* "All" always first */}
         <CategoryCard
           label="All"
@@ -55,45 +55,23 @@ const CategoryAccordion: React.FC<CategoryAccordionProps> = ({
           selected={selected === null}
           onClick={() => onSelect(null)}
         />
+        
+        {/* Main categories displayed directly without accordion */}
         {displayed.map((main) => (
-          <Accordion type="single" collapsible key={main} className="w-auto">
-            <AccordionItem value={main} className="border-none">
-              <AccordionTrigger
-                className={cn(
-                  "p-0 bg-transparent data-[state=open]:bg-primary/10 rounded-full",
-                  "flex items-center gap-2 whitespace-nowrap"
-                )}
-                onClick={() =>
-                  selected === main ? onSelect(null) : onSelect(main)
-                }
-              >
-                <CategoryCard
-                  label={main}
-                  icon={CATEGORY_ICONS[main] || "🏷️"}
-                  selected={selected === main}
-                  width={120}
-                />
-              </AccordionTrigger>
-              <AccordionContent className="pl-6 pt-1 flex flex-wrap gap-2">
-                {subCategoryMap[main]?.map((sub) => (
-                  <CategoryCard
-                    key={sub}
-                    label={sub}
-                    icon={CATEGORY_ICONS[sub]}
-                    selected={selected === sub}
-                    onClick={() => onSelect(sub)}
-                    width={120}
-                  />
-                ))}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <CategoryCard
+            key={main}
+            label={main}
+            icon={CATEGORY_ICONS[main] || "🏷️"}
+            selected={selected === main}
+            onClick={() => selected === main ? onSelect(null) : onSelect(main)}
+          />
         ))}
+        
         {/* Show More/Less Button */}
         {!showAll && mainCategories.length > expandedCount && (
           <button
             type="button"
-            className="ml-2 px-3 py-1.5 rounded border bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90"
+            className="px-3 py-1.5 rounded border bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90"
             onClick={() => setShowAll(true)}
           >
             Show More
@@ -102,13 +80,28 @@ const CategoryAccordion: React.FC<CategoryAccordionProps> = ({
         {showAll && mainCategories.length > expandedCount && (
           <button
             type="button"
-            className="ml-2 px-3 py-1.5 rounded border bg-muted text-muted-foreground font-medium text-sm hover:bg-accent"
+            className="px-3 py-1.5 rounded border bg-muted text-muted-foreground font-medium text-sm hover:bg-accent"
             onClick={() => setShowAll(false)}
           >
             Show Less
           </button>
         )}
       </div>
+      
+      {/* If we have subcategories for the selected category, show them */}
+      {selected && subCategoryMap[selected]?.length > 0 && (
+        <div className="mt-3 pl-3 grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-2">
+          {subCategoryMap[selected].map((sub) => (
+            <CategoryCard
+              key={sub}
+              label={sub}
+              icon={CATEGORY_ICONS[sub]}
+              selected={false}
+              onClick={() => onSelect(sub)}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 };

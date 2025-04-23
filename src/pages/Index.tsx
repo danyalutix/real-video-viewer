@@ -10,9 +10,9 @@ import CategoryAccordion from '@/components/CategoryAccordion';
 import CategoryFilters from '@/components/CategoryFilters';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
-// Define main categories to display in the UI
+// Define main categories to display in the UI (reduced to 5-7 for better UI)
 const MAIN_CATEGORIES = [
-  "Asian", "Teen", "MILF", "Amateur", "Lesbian"
+  "Asian", "Teen", "MILF", "Amateur", "Lesbian" 
 ];
 
 const POPULAR_CATEGORIES = [
@@ -167,6 +167,16 @@ const Index = () => {
     <VideoCardSkeleton key={`skeleton-${i}`} />
   ));
 
+  // Reset all filters
+  const resetAllFilters = () => {
+    setSearch('');
+    setFilterCategory('all_categories');
+    setSelectedCategory(null);
+    setDuration('any_duration');
+    setSort('views');
+    setPage(1);
+  };
+
   return (
     <div className="min-h-screen bg-background font-roboto">
       <header className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-10">
@@ -243,13 +253,7 @@ const Index = () => {
                   Try adjusting your filters or search terms.
                 </p>
                 <button
-                  onClick={() => {
-                    setSearch('');
-                    setFilterCategory('all_categories');
-                    setSelectedCategory(null);
-                    setDuration('any_duration');
-                    setSort('views');
-                  }}
+                  onClick={resetAllFilters}
                   className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
                 >
                   Reset Filters
